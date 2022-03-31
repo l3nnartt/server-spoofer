@@ -28,8 +28,8 @@ public class ServerSpoofer extends LabyModAddon {
         // show all log levels
         LOGGER.getParent().getHandlers()[0].setLevel(Level.ALL);
 
-        // register serversupport to spoof server (stolen from bugfixes)
-        exService.execute(new ServerFetcher(servers -> api.registerServerSupport(this, new ServerSupport(servers))));
+        // register serversupport to spoof on every server, labymod uses contains in the server address, so we use this :D
+        api.registerServerSupport(this, new ServerSupport("."));
 
         // successful started
         LOGGER.log(Level.INFO, PREFIX + "Addon successful activated");
