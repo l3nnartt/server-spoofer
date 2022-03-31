@@ -1,6 +1,5 @@
 {
-  "name": "Example Addon",
+  "name": "ServerSpoofer",
   "uuid": "%uuid%",
-  "mainClass": "com.example.addon.ExampleAddon",
-  "transformerClass": "com.example.addon.ExampleAddonTransformer"
+  "mainClass": "com.github.l3nnartt.serverspoofer.ServerSpoofer"
 }
