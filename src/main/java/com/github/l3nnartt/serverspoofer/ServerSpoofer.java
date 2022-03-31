@@ -3,25 +3,41 @@ package com.github.l3nnartt.serverspoofer;
 import net.labymod.api.LabyModAddon;
 import net.labymod.labyconnect.packets.PacketPlayServerStatus;
 import net.labymod.settings.elements.SettingsElement;
-import net.labymod.utils.Consumer;
-import net.labymod.utils.ServerData;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ServerSpoofer extends LabyModAddon {
 
-    private static String server;
+    private final ExecutorService exService = Executors.newSingleThreadExecutor();
+    private String server;
+    private static ServerSpoofer instance;
+
+    // Logger
+    private static final Logger LOGGER = Logger.getLogger("ServerSpoofer");
+    private final String PREFIX = "[ServerSpoofer-1.16] ";
 
     @Override
     public void onEnable() {
-        api.getEventService().registerListener((Consumer<ServerData>) data -> ServerSpoofer.this.updateStatus());
+        // addon instance
+        instance = this;
+
+        // show all log levels
+        LOGGER.getParent().getHandlers()[0].setLevel(Level.ALL);
+
+        // register serversupport to spoof server (stolen from bugfixes)
+        exService.execute(new ServerFetcher(servers -> api.registerServerSupport(this, new ServerSupport(servers))));
+
+        // successful started
+        LOGGER.log(Level.INFO, PREFIX + "Addon successful activated");
     }
 
     @Override
     public void loadConfig() {
-        if (getConfig().has("status")) {
-          server = getConfig().has( "server" ) ? getConfig().get( "server" ).getAsString() : "play.timolia.de";
-        }
+        server = getConfig().has("server") ? getConfig().get("server").getAsString() : "play.timolia.de";
     }
 
     @Override
@@ -29,9 +45,21 @@ public class ServerSpoofer extends LabyModAddon {
 
     }
 
-
+    // method to spoof server
     public void updateStatus() {
-      PacketPlayServerStatus packet = new PacketPlayServerStatus(server, 25565, "");
-      api.getLabyModChatClient().getClientConnection().sendPacket(packet);
+        PacketPlayServerStatus packet = new PacketPlayServerStatus(server, 25565);
+        api.getLabyModChatClient().getClientConnection().sendPacket(packet);
+    }
+
+    public void logInfo(String log) {
+        LOGGER.log(Level.INFO, PREFIX + log);
+    }
+
+    public static ServerSpoofer getInstance() {
+        return instance;
+    }
+
+    public ExecutorService getExService() {
+        return exService;
     }
 }
